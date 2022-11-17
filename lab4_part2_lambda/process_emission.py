@@ -23,7 +23,15 @@ def lambda_handler(event, context):
     client.publish(
         topic="emission/{}".format(event['vehicle_id']),
         payload=json.dumps(
-            {"message": "Max CO2 emission from {} is {}".format(event['vehicle_id'], vehicles[event['vehicle_id']])}
+            {
+                "max_CO2_emission": vehicles[event['vehicle_id']],
+                "message": "Max CO2 emission from {} is {}".format(event['vehicle_id'], vehicles[event['vehicle_id']]),
+                "timestep_time": event['timestep_time'],
+                "vehicle_id": event['vehicle_id'],
+                "vehicle_CO2": event['vehicle_CO2'],
+                "vehicle_noise": event['vehicle_noise'],
+                "vehicle_speed": event['vehicle_speed']
+            }
         ),
     )
  

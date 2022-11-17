@@ -183,13 +183,19 @@ while True:
     if args.mode == 'both' or args.mode == 'publish':
         vehicle_data = pd.read_csv(dataPath)
         for _,rowTuple in vehicle_data.iterrows():
+            timestep_time = rowTuple['timestep_time']
             vehicle_CO2 = rowTuple['vehicle_CO2']
             vehicle_id = rowTuple['vehicle_id']
+            vehicle_noise = rowTuple['vehicle_noise']
+            vehicle_speed = rowTuple['vehicle_speed']
             message = {}
+            message['timestep_time'] = timestep_time
             message['vehicle_CO2'] = vehicle_CO2
             message['vehicle_id'] = vehicle_id
+            message['vehicle_noise'] = vehicle_noise
+            message['vehicle_speed'] = vehicle_speed
             messageJson = json.dumps(message)
-            myAWSIoTMQTTClient.subscribe("emissions/{}".format(vehicle_id), 0, subscriptionCallback)
+            myAWSIoTMQTTClient.subscribe("emissions/{}".format(rowTuple['vehicle_id']), 0, subscriptionCallback)
             myAWSIoTMQTTClient.publish(topic, messageJson, 0)
             loopCount += 1
     time.sleep(1)
