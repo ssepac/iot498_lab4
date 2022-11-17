@@ -174,14 +174,18 @@ if not connected:
     print("Cannot connect to core %s. Exiting..." % coreInfo.coreThingArn)
     sys.exit(-2)
 
+messagesReceived = 0
 # Suback callback
 def subscriptionCallback(client, userdata, message):
     print("Subscription received:", message)
+    global messagesReceived
+    messagesReceived = messagesReceived + 1
 
-loopCount = 0
-while True:
-    if args.mode == 'both' or args.mode == 'publish':
-        vehicle_data = pd.read_csv(dataPath)
+publishesComplete = False
+vehicle_data = pd.read_csv(dataPath)
+number_of_rows = vehicle_data.shape[0]
+while True and messagesReceived < number_of_rows:
+    if publishesComplete == False and (args.mode == 'both' or args.mode == 'publish'):
         for _,rowTuple in vehicle_data.iterrows():
             timestep_time = rowTuple['timestep_time']
             vehicle_CO2 = rowTuple['vehicle_CO2']
@@ -197,5 +201,6 @@ while True:
             messageJson = json.dumps(message)
             myAWSIoTMQTTClient.subscribe("emissions/{}".format(rowTuple['vehicle_id']), 0, subscriptionCallback)
             myAWSIoTMQTTClient.publish(topic, messageJson, 0)
-            loopCount += 1
-    time.sleep(1)
+        publishesComplete = True
+        print("Publishing vehicle data complete, waiting for subscriptions to complete...")
+print("Complete.")
